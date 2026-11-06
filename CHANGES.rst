@@ -30,6 +30,9 @@ Unreleased
     of only lower case file extensions. :pr:`6012`
 -   Fix parsing IPv6 with port in ``run`` and the test client. :pr:`6096`
 -   Add ``app.query`` route decorator for the HTTP QUERY method.
+-   Allow setting request limits (such as ``request.max_content_length``) to
+    ``None`` to explicitly disable limits when application config is set.
+    :issue:`6183`
 
 
 Version 3.1.3
