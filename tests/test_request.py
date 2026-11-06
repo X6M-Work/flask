@@ -53,6 +53,20 @@ def test_limit_config(app: Flask):
         assert r.max_form_memory_size == 30
         assert r.max_form_parts == 4
 
+    # can explicitly disable limits by setting to None
+    r.max_content_length = None
+    r.max_form_memory_size = None
+    r.max_form_parts = None
+
+    assert r.max_content_length is None
+    assert r.max_form_memory_size is None
+    assert r.max_form_parts is None
+
+    with app.app_context():
+        assert r.max_content_length is None
+        assert r.max_form_memory_size is None
+        assert r.max_form_parts is None
+
 
 def test_trusted_hosts_config(app: Flask) -> None:
     app.config["TRUSTED_HOSTS"] = ["example.test", ".other.test"]
@@ -68,3 +82,19 @@ def test_trusted_hosts_config(app: Flask) -> None:
     assert r.status_code == 200
     r = client.get(base_url="http://bad.test")
     assert r.status_code == 400
+
+
+def test_max_content_length_override_none(app: Flask, client: FlaskClient) -> None:
+    app.config["MAX_CONTENT_LENGTH"] = 50
+
+    @app.before_request
+    def disable_limit() -> None:
+        request.max_content_length = None
+
+    @app.post("/")
+    def index():
+        return request.form["myfile"]
+
+    rv = client.post("/", data={"myfile": "foo" * 50})
+    assert rv.status_code == 200
+    assert rv.data == b"foo" * 50

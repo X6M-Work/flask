@@ -14,6 +14,9 @@ from .helpers import _split_blueprint_path
 if t.TYPE_CHECKING:  # pragma: no cover
     from werkzeug.routing import Rule
 
+# a singleton sentinel value for unset request limits
+_sentinel = object()
+
 
 class Request(RequestBase):
     """The request object used by default in Flask.  Remembers the
@@ -52,9 +55,9 @@ class Request(RequestBase):
     #: something similar.
     routing_exception: HTTPException | None = None
 
-    _max_content_length: int | None = None
-    _max_form_memory_size: int | None = None
-    _max_form_parts: int | None = None
+    _max_content_length: int | None = _sentinel  # type: ignore[assignment]
+    _max_form_memory_size: int | None = _sentinel  # type: ignore[assignment]
+    _max_form_parts: int | None = _sentinel  # type: ignore[assignment]
 
     @property
     def max_content_length(self) -> int | None:
@@ -77,7 +80,7 @@ class Request(RequestBase):
         .. versionchanged:: 0.6
             This is configurable through Flask config.
         """
-        if self._max_content_length is not None:
+        if self._max_content_length is not _sentinel:
             return self._max_content_length
 
         if not current_app:
@@ -104,7 +107,7 @@ class Request(RequestBase):
         .. versionchanged:: 3.1
             This is configurable through Flask config.
         """
-        if self._max_form_memory_size is not None:
+        if self._max_form_memory_size is not _sentinel:
             return self._max_form_memory_size
 
         if not current_app:
@@ -131,7 +134,7 @@ class Request(RequestBase):
         .. versionchanged:: 3.1
             This is configurable through Flask config.
         """
-        if self._max_form_parts is not None:
+        if self._max_form_parts is not _sentinel:
             return self._max_form_parts
 
         if not current_app:
